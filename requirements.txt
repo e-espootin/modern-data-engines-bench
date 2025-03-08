@@ -1,0 +1,9 @@
+smallpond==0.15.0
+setuptools==75.8.2
+ipykernel
+colorlog
+# distutils
+# spawn
+mkdocs
+pre-commit
+pathlib

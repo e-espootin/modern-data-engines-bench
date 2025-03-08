@@ -1,0 +1,20 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+hello.py
+.archive
+.db
+.dbdir
+output/*
+data/*
+# Virtual environments
+.venv
+
+#cache
+comparison_project/src/module_spark/__pycache__/
+comparison_project/src/utils/__pycache__/
+comparison_project/src/module_duckdb/__pycache__
