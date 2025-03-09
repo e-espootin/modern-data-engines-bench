@@ -29,7 +29,6 @@ build:
 	uv pip install -r requirements.txt
 	cd src && uv run main.py
 	
-
 run:
 	@echo "Building the project on local"
 	uv pip install -r requirements.txt
