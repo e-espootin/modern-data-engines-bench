@@ -5,7 +5,7 @@ from pathlib import Path
 
 class ParquetProcessor:
     def __init__(self):
-        self.input_path = f"{self.get_project_root().parent}/data/transactions.parquet"
+        self.input_path = f"{self.get_project_root().parent}/data/sample_transactions_100000k.parquet"
         self.output_path = f"{self.get_project_root().parent}"
 
     def get_project_root(self) -> Path:
@@ -62,6 +62,6 @@ if __name__ == "__main__":
     processor = ParquetProcessor()
     df = processor.read_parquet()
     if df is not None:
-        processor.create_sample(df, sample_size=100000)
+        processor.create_sample(df, sample_size=30000)
     # df = processor.read_schema()
     # df.collect()

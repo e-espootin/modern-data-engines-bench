@@ -25,7 +25,7 @@ class SparkTest:
             self.process_data_spark()
 
             # save results
-            self.save_results_spark()
+            # self.save_results_spark()
         except Exception as e:
             logger.error(f"Error in call_Process: {e}")
             raise e
@@ -36,7 +36,12 @@ class SparkTest:
             # read the test data
             filename = f"{self.data_dir}/{self.test_file_name}"
             logger.debug(f"Loading data from {filename}")
-            self.df = self.spark.read.parquet(filename)
+            # load all data
+            # self.df = self.spark.read.parquet(filename)
+
+            #! [Optimization] filter columns on read
+            self.df = self.spark.read.parquet(
+                filename).select("Cust_ID", "Amount", "Month")
         except Exception as e:
             logger.error(f"Error in _load_data_spark: {e}")
             raise e
@@ -45,19 +50,15 @@ class SparkTest:
     def process_data_spark(self):
         try:
             # transform the data
-            # logger.debug(self.df.show(1))
-            # get some aggregate values >> get overall sum of Amount for each customer
+            # get some aggregate values
             df_agg = self.df.groupBy("Cust_ID").agg(
                 sum("Amount").alias("total_amount"))
-            # logger.debug(df_agg.show(1))
             # get some aggregate values >> transaction volumes per month
             df_agg_month = self.df.groupBy("Month").agg(
                 sum("Amount").alias("Month_total_Amount"))
-            # logger.debug(df_agg_month.show(1))
             # concat the data
             self.transformed_df = self.df.join(df_agg, "Cust_ID", "inner").join(
                 df_agg_month, "Month", "inner")
-            logger.debug(self.transformed_df.show(1))
         except Exception as e:
             logger.error(f"Error in process_data_spark: {e}")
             raise e
