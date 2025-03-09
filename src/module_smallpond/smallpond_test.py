@@ -14,11 +14,20 @@ class smallpond_test:
         self.data_dir = data_dir
         self.output_dir = output_dir
         try:
-            # args = {"cpu_count": 2, "memory": "1g",
-            #         "max_usable_cpu_count": 2, "num_cpus": 2, "max_usable_memory_size": 1}
-            args = {"data_root": f"{self.data_dir}",
-                    "duckdb_path": str(output_dir / "smallpond_duckdb.db")}
-            self.sp = smallpond.init(**args)  # **args
+
+            # Initialize smallpond
+            self.sp = smallpond.init()
+            #! [optimized]
+            # args = {
+            #     "data_root": f"{self.output_dir}",
+            #     "duckdb_path": str(Path(output_dir) / "smallpond_duckdb.db"),
+            #     "memory_per_worker": "4g",  # Increase memory per worker
+            #     "object_store_memory": "8g",  # Larger object store
+            #     "num_cpus": 2,  # Control CPU usage
+            #     # Add spill directory
+            #     "spill_dir": str(Path(output_dir) / "smallpond_spill")
+            # }
+            # self.sp = smallpond.init(**args)
             self.df = None
             self.transformed_df = None
         except Exception as e:
@@ -35,7 +44,7 @@ class smallpond_test:
             self.process_data()
 
             # save results
-            self.save_results()
+            # self.save_results()
         except Exception as e:
             logger.error(f"Error in call_Process: {e}")
             raise e
@@ -59,12 +68,9 @@ class smallpond_test:
     @log_execution_time(process_engine="smallpond")
     def process_data(self):
         try:
-            # self.df = self.df.repartition(3)  # evenly distributed
-            # self.df = self.df.repartition(
-            #     3, by="YEAR")  # partitioned by column
             # transform data
-            self.df = self.df.repartition(3, hash_by="CUST_ID")
-            print(self.df.to_pandas().info())
+            self.df = self.df.repartition(3, hash_by="MONTH")
+
             df_agg_cust_id = self.sp.partial_sql(
                 "SELECT CUST_ID, sum(AMOUNT) sum_AMOUNT FROM {0} GROUP BY CUST_ID", self.df)
             df_agg_month = self.sp.partial_sql(
@@ -79,14 +85,10 @@ class smallpond_test:
                         on trans.MONTH = m.MONTH \
                           ", self.df, df_agg_cust_id, df_agg_month)
 
-            # sort
-            # self.transformed_df = self.transformed_df.partial_sort(
-            #     by=['YEAR', 'total_amount'])
+            # repartition data
             self.transformed_df = self.transformed_df.repartition(
-                3, hash_by="CUST_ID")
-            print(self.transformed_df.to_pandas().info())
-            print(self.transformed_df.to_pandas()[
-                  '__data_partition__'].value_counts())
+                3, hash_by="MONTH")
+
         except Exception as e:
             logger.error(f"Error in process_data: {e}")
             raise e
@@ -94,13 +96,13 @@ class smallpond_test:
     @log_execution_time(process_engine="smallpond")
     def save_results(self):
         try:
-            files_path = f"{self.output_dir}/smallpond_output"
+            files_path = f"{self.output_dir}/smallpond_output/"
             logger.info(f"Saving results to {files_path}")
             # clean up path
             if Path(files_path).exists():
                 shutil.rmtree(files_path)
-
-            Path(files_path).mkdir(parents=True, exist_ok=True)
+            Path(
+                f"{self.output_dir}/smallpond_output/").mkdir(parents=True, exist_ok=True)
 
             self.transformed_df.write_parquet(files_path)
         except Exception as e:

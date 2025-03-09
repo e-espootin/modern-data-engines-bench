@@ -3,7 +3,7 @@ import random
 
 
 class FileReader:
-    def __init__(self, input_path="/Users/ebrahimespootin/dev/publish/smallpond_spark_compare/comparison_project/output/smallpond_output/SqlEngineTask.000005-0afc6a3b-d3ab-42f9-b6f2-9ec604e9eea4.000034.0.0-0.0.0.parquet"):
+    def __init__(self, input_path="/Users/ebrahimespootin/dev/publish/smallpond_spark_compare/comparison_project/data/sample_transactions_1k.parquet"):
         self.input_path = input_path
 
     def read_parquet(self):

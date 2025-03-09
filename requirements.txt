@@ -1,5 +1,6 @@
 smallpond==0.15.0
 setuptools==75.8.2
+pyspark
 ipykernel
 colorlog
 # distutils
@@ -7,3 +8,4 @@ colorlog
 mkdocs
 pre-commit
 pathlib
+streamlit

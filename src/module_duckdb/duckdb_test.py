@@ -20,37 +20,49 @@ class DuckDBTest:
         '''call the process_data method'''
         try:
             # load data
-            self.load_data_spark()
+            self.load_data_duckdb()
 
             # process data
-            self.process_data_spark()
+            self.process_data_duckdb()
 
             # save results
-            self.save_results_spark()
+            # self.save_results_duckdb()
         except Exception as e:
             logger.error(f"Error in call_Process: {e}")
             raise e
 
     @log_execution_time(process_engine="duckdb")
-    def load_data_spark(self):
+    def load_data_duckdb(self):
         try:
             # read the test data
             filename = f"{self.data_dir}/{self.test_file_name}"
             logger.debug(f"Loading data from {filename}")
-            # with duckdb.connect(f"{self.data_dir}") as con:
-            #     df = con.execute(f"SELECT * FROM {self.test_file_name}").df()
-            # self.df = pd.read_parquet(filename)
-            # load data into parquet
+
+            # [before optimization]load data into parquet
+            # self.con.execute(
+            #     f"CREATE OR REPLACE Table source_data AS SELECT * FROM read_parquet('{filename}')")
+
+            #! [Optimization] read multithread
+            self.con.execute("PRAGMA threads=4")
             self.con.execute(
-                f"CREATE OR REPLACE Table source_data AS SELECT * FROM read_parquet('{filename}')")
-            logger.debug(f"Data loaded successfully")
+                f"CREATE OR REPLACE Table source_data AS SELECT CUST_ID, MONTH, AMOUNT FROM read_parquet('{filename}')")
+            #! [Optimization] table DDL and data types
+            # PRAGMA table_info('source_data');
+
+            logger.debug("Data loaded successfully")
         except Exception as e:
             logger.error(f"Error in _load_data_spark: {e}")
             raise e
 
     @log_execution_time(process_engine="duckdb")
-    def process_data_spark(self):
+    def process_data_duckdb(self):
         try:
+            #! [Optimization] create index
+            self.con.execute(
+                "CREATE INDEX IF NOT EXISTS idx_cust_id ON source_data(Cust_ID)")
+            self.con.execute(
+                "CREATE INDEX IF NOT EXISTS idx_month ON source_data(MONTH)")
+            #! [Optimization] EXPLAIN or EXPLAIN ANALYZE
             # transform the data
             self.transformed_df = self.con.execute("""
                 with ct_agg_customer as (
@@ -83,7 +95,7 @@ class DuckDBTest:
             raise e
 
     @log_execution_time(process_engine="duckdb")
-    def save_results_spark(self):
+    def save_results_duckdb(self):
         try:
             # write the data
             output_file = f"{self.output_dir}/duckdb_output/duckdb_data_output.parquet"

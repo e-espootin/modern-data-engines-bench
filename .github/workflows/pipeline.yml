@@ -14,14 +14,23 @@ jobs:
 
     steps:  
     - uses: actions/checkout@v3  
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
 
-    - name: Set up Python  
-      uses: actions/setup-python@v4  
-      with:  
-        python-version: '3.12'  
+    - name: "Set up Python"
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: ".python-version" 
 
-    - name: Install dependencies  
-      run: pip install -r requirements.txt  
+    - name: Install the project
+      run: uv sync --all-extras --dev
 
-    # - name: Run tests  
-    #   run: pytest   
+    # todo : install spark
+
+    - name: get sample dataset
+      run: make load_sample_dataset
+
+    # - name: run project
+    #   run: make build
+
