@@ -28,6 +28,7 @@ class SparkConfig:
                            .appName(self.app_name)
                            .config("spark.sql.execution.arrow.pyspark.enabled", "true")
                            .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+                           .config("spark.sql.adaptive.enabled", "true")
                            #    .config("spark.driver.memory", "1g")
                            #    .config("spark.driver.memory", "1g")
                            #    .config("spark.executor.memory", "1g")

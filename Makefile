@@ -16,6 +16,7 @@ cleanup:
 	@echo "Cleaning up"
 	rm -rf $(ROOT_PATH)/output/*
 	rm -rf $(ROOT_PATH)/.dbdir/*
+	rm -fg $(ROOT_PATH)/spark-warehouse/*
 
 load_sample_dataset:
 	mkdir -p $(ROOT_PATH)/data && curl -L -o $(ROOT_PATH)/data/sample-transactions.zip \
