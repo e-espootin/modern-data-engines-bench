@@ -1,5 +1,5 @@
 from .config import SparkConfig
-from pyspark.sql.functions import sum
+from pyspark.sql.functions import sum, broadcast
 from utils.log_decorator import log_execution_time
 from utils.logger import setup_logger
 
@@ -49,8 +49,7 @@ class SparkTest:
     @log_execution_time(process_engine="spark")
     def process_data_spark(self):
         try:
-            # transform the data
-            # get some aggregate values
+            '''simple join, AQE is enabled'''
             df_agg = self.df.groupBy("Cust_ID").agg(
                 sum("Amount").alias("total_amount"))
             # get some aggregate values >> transaction volumes per month
@@ -59,6 +58,23 @@ class SparkTest:
             # concat the data
             self.transformed_df = self.df.join(df_agg, "Cust_ID", "inner").join(
                 df_agg_month, "Month", "inner")
+
+            '''bucketed'''
+            # self.df.write.bucketBy(10, 'Cust_id').sortBy(
+            #     'Cust_ID').saveAsTable('df')
+            # df_agg.write.bucketBy(10, 'Cust_ID').sortBy(
+            #     'Cust_ID').saveAsTable('df_agg')
+            # df_agg_month.write.bucketBy(10, 'Month').sortBy(
+            #     'Month').saveAsTable('df_agg_month')
+
+            # df_bucketed = self.spark.table("df")
+            # df_agg_bucketed = self.spark.table("df_agg")
+            # df_agg_month_bucketed = self.spark.table("df_agg_month")
+
+            # self.transformed_df = df_bucketed.join(df_agg_bucketed, "Cust_ID", "inner").join(
+            #     broadcast(df_agg_month_bucketed), "Month", "inner")
+
+            logger.info(f"explain is {self.transformed_df.explain(mode="extended")}")
         except Exception as e:
             logger.error(f"Error in process_data_spark: {e}")
             raise e

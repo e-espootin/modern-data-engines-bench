@@ -11,6 +11,7 @@ hello.py
 .dbdir
 output/*
 data/*
+spark-warehouse/*
 # Virtual environments
 .venv
 
