@@ -18,6 +18,7 @@ cd comparison_project
 
 # Install dependencies
 make load_sample_dataset
+
 # run
 make run
 ```
